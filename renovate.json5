@@ -1,0 +1,34 @@
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  // 組織共通の preset (schedule, dependencyDashboard, automerge minor/patch,
+  // reviewers: team:admin-team など) を継承する
+  extends: [
+    'github>GiganticMinecraft/renovate-config',
+  ],
+  customManagers: [
+    // jsonnet ファイル内の `quay.io/thanos/thanos:vX.Y.Z` を docker datasource で追跡する。
+    // これがこの repo における唯一の上流追従ポイント。
+    {
+      customType: 'regex',
+      managerFilePatterns: [
+        '/(^|/)main\\.jsonnet$/',
+      ],
+      matchStrings: [
+        "image:\\s*'(?<depName>quay\\.io/thanos/thanos):(?<currentValue>v[\\d.]+)'",
+      ],
+      datasourceTemplate: 'docker',
+      versioningTemplate: 'semver',
+    },
+    // CI workflow が download する go-jsonnet と kubeconform のバージョンを追跡
+    {
+      customType: 'regex',
+      managerFilePatterns: [
+        '/(^|/)\\.github/workflows/.+\\.ya?ml$/',
+      ],
+      matchStrings: [
+        '#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\s*\\n\\s*\\S+_VERSION:\\s*(?<currentValue>\\S+)',
+      ],
+      versioningTemplate: 'semver',
+    },
+  ],
+}

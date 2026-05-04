@@ -1,0 +1,25 @@
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:recommended',
+  ],
+  timezone: 'Asia/Tokyo',
+  reviewers: [
+    'outductor',
+  ],
+  // jsonnet ファイル内の `quay.io/thanos/thanos:vX.Y.Z` を docker datasource で追跡する。
+  // これがこの repo における唯一の上流追従ポイント。
+  customManagers: [
+    {
+      customType: 'regex',
+      managerFilePatterns: [
+        '/(^|/)main\\.jsonnet$/',
+      ],
+      matchStrings: [
+        "image:\\s*'(?<depName>quay\\.io/thanos/thanos):(?<currentValue>v[\\d.]+)'",
+      ],
+      datasourceTemplate: 'docker',
+      versioningTemplate: 'semver',
+    },
+  ],
+}

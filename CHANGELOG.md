@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/GiganticMinecraft/thanos-config/compare/v1.0.0...v1.0.1) (2026-09-07)
+
+
+### Bug Fixes
+
+* raw サンプルの retention を 90 日に制限する ([83f5484](https://github.com/GiganticMinecraft/thanos-config/commit/83f5484cd40667fe67df931e450ab661e00024da))
+
 ## 1.0.0 (2026-05-04)
 
 

@@ -318,8 +318,24 @@ local compact = {
               '--delete-delay=48h',
               '--compact.concurrency=1',
               '--downsample.concurrency=1',
+              // downsampling は有効化しない。2026-09-07 時点で Grafana の
+              // ダッシュボード 59 個はすべて既定期間が now-30m〜now-6h、
+              // リポジトリ内のルールも最長のレンジセレクタが [7d] であり、
+              // 7 日を超えて参照する設定が存在しない。5m/1h の解像度を作る
+              // 初回コスト(6 か月分の一括 downsample)と compactor の
+              // memory limit 1Gi での OOM リスクに見合う利益がないため。
               '--downsampling.disable',
-              '--retention.resolution-raw=0d',
+              // raw は 90 日で打ち切る。0d(無期限)だと thanos バケットが
+              // 2.3 GiB/日 で際限なく増え、garage→PBS バックアップの
+              // dump 用 PVC (400Gi) を溢れさせて backup--garage-to-pbs を
+              // ENOSPC で失敗させる(2026-09-06 に発生)。thanos 以外のバケットが
+              // 約 78 GiB あるため thanos は 320 GiB 未満に収める必要があり、
+              // 90 日なら定常 207 GiB 前後で収まる。
+              // なお 30 日以内は Prometheus のローカル保持(30d/120GB)で
+              // 賄えるため、Thanos の価値は 30〜90 日の範囲にある。
+              '--retention.resolution-raw=90d',
+              // downsampling が無効なので 5m/1h のブロックは生成されず、
+              // これらの値は現状では効果を持たない。
               '--retention.resolution-5m=0d',
               '--retention.resolution-1h=0d',
             ] + [

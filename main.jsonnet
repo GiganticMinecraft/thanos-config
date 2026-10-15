@@ -29,6 +29,24 @@ local cfg = {
     'dnssrv+_grpc._tcp.prometheus-kube-prometheus-thanos-discovery.monitoring.svc.cluster.local',
     'dnssrv+_grpc._tcp.thanos-store.monitoring.svc.cluster.local',
   ],
+
+  // Store Gateway が object storage (Garage) に掛ける負荷の上限。
+  //
+  // Garage はブロック読み出し時にブロックファイル全体を RAM に載せる仕様で、
+  // このクラスタは blockSize=64MiB で運用しているため、Store Gateway が
+  // index/chunk の小さな range を並列に読むだけで Garage 側は 1 リクエスト
+  // あたり 64MiB を消費する。2026-10-14 に 7 日レンジのクエリで Garage 3 pod
+  // が揃って OOMKilled され、S3 書き込みが止まった。
+  //
+  // - seriesMaxConcurrency: Series 呼び出しの同時実行数 (Thanos 既定 20)。
+  // - minTime: Prometheus 本体の retention (kube-prometheus-stack 側で 30d)
+  //   の内側は sidecar が返せるので、Store Gateway は retention より古い
+  //   ブロックだけを担当させる。1 日の重なりを残し、retention 境界付近で
+  //   どちらからも返らない時間帯が出ないようにする。
+  store: {
+    seriesMaxConcurrency: 5,
+    minTime: '-29d',
+  },
 };
 
 local commonLabels(name) = {
@@ -247,6 +265,8 @@ local store = {
               '--data-dir=/var/thanos/store',
               '--objstore.config=$(OBJSTORE_CONFIG)',
               '--ignore-deletion-marks-delay=24h',
+              '--store.grpc.series-max-concurrency=%d' % cfg.store.seriesMaxConcurrency,
+              '--min-time=' + cfg.store.minTime,
             ],
             env: objstoreEnv,
             ports: [

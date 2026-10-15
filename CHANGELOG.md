@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.2](https://github.com/GiganticMinecraft/thanos-config/compare/v1.0.1...v1.0.2) (2026-10-15)
+
+
+### Bug Fixes
+
+* **store:** Garage を潰さないよう Series 並列数と担当期間を絞る ([9594928](https://github.com/GiganticMinecraft/thanos-config/commit/9594928d892c56436c323b39d60dc53c2f5afcfd))
+* **store:** Garage を潰さないよう Series 並列数と担当期間を絞る ([2ab672c](https://github.com/GiganticMinecraft/thanos-config/commit/2ab672cdab481c917a210205d3aa11900bc25c53))
+
 ## [1.0.1](https://github.com/GiganticMinecraft/thanos-config/compare/v1.0.0...v1.0.1) (2026-09-07)
 
 
